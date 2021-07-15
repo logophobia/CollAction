@@ -6,7 +6,7 @@ server {
     ssl_certificate_key /etc/nginx/certs/collaction.key;
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";
     add_header X-Content-Type-Options: "nosniff";
-    add_header X-Frame-Options SAMEORIGIN
+    add_header X-Frame-Options SAMEORIGIN;
     add_header Referrer-Policy "strict-origin-when-cross-origin";
     add_header Feature-Policy "geolocation 'none'; midi 'none'; notifications 'none'; push 'none'; sync-xhr 'none'; microphone 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; speaker 'none'; vibrate 'none'; fullscreen 'none'; payment 'none';";
 

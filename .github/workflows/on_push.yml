@@ -1,6 +1,7 @@
 name: Build and push branches
 
 on: 
+  workflow_dispatch:
   push:
     branches-ignore:
       - master
@@ -10,25 +11,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: docker/build-push-action@v1
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
       with:
         username: ${{ secrets.DockerUsername }}
         password: ${{ secrets.DockerPassword }}
-        repository: collaction/frontend
-        tag_with_ref: true
-        dockerfile: Frontend/Dockerfile
-        path: Frontend 
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Get smart tag
+      id: prepare
+      uses: Surgo/docker-smart-tag-action@v1
+      with:
+        docker_image: collaction/frontend
+    - name: Build and push frontend to docker
+      uses: docker/build-push-action@v2
+      with:
+        context: Frontend
+        push: true
+        tags: ${{ steps.prepare.outputs.tag }}
 
   build_backend:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: docker/build-push-action@v1
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
       with:
         username: ${{ secrets.DockerUsername }}
         password: ${{ secrets.DockerPassword }}
-        repository: collaction/backend
-        tag_with_ref: true
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Get smart tag
+      id: prepare
+      uses: Surgo/docker-smart-tag-action@v1
+      with:
+        docker_image: collaction/backend
+    - uses: docker/build-push-action@v2
+      with:
+        username: ${{ secrets.DockerUsername }}
+        password: ${{ secrets.DockerPassword }}
+        file: CollAction/Dockerfile
+        context: .
+        tags: ${{ steps.prepare.outputs.tag }}
         dockerfile: CollAction/Dockerfile

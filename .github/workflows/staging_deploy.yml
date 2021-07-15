@@ -1,6 +1,7 @@
 name: Deploy to staging
 
 on: 
+  workflow_dispatch:
   push:
     # Staging environment is offline
     branches-ignore:
@@ -19,13 +20,23 @@ jobs:
       id: get_imagetag
       run: echo ::set-output name=TAG::sha-${GITHUB_SHA:12}    
 
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DockerUsername }}
+        password: ${{ secrets.DockerPassword }}
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
     - uses: docker/build-push-action@v1
       with:
         username: ${{ secrets.DockerUsername }}
         password: ${{ secrets.DockerPassword }}
-        repository: collaction/backend
-        tags: ${{ steps.get_imagetag.outputs.TAG }},latest
+        tags: collaction/backend:${{ steps.get_imagetag.outputs.TAG }},collaction/backend:latest
         dockerfile: CollAction/Dockerfile
+        context: .
+        push: true
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1

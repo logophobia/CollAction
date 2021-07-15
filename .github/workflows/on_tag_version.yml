@@ -1,6 +1,7 @@
 name: On version tag
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - v* # Push events matching v*, e.g. v2.0.0.
@@ -13,15 +14,18 @@ jobs:
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}    
-    - uses: actions/checkout@v2
-    - uses: docker/build-push-action@v1
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
       with:
         username: ${{ secrets.DockerUsername }}
         password: ${{ secrets.DockerPassword }}
-        repository: collaction/frontend
-        tags: ${{ steps.get_version.outputs.VERSION }}
-        dockerfile: Frontend/Dockerfile
-        path: Frontend
+    - name: Checkout
+      uses: actions/checkout@v2
+    - uses: docker/build-push-action@v2
+      with:
+        context: Frontend
+        tags: collaction/frontend:${{ steps.get_version.outputs.VERSION }}
+        push: true
 
   build_backend:
     runs-on: ubuntu-latest
@@ -30,13 +34,17 @@ jobs:
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}    
-
-    - uses: actions/checkout@v2
-
-    - uses: docker/build-push-action@v1
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
       with:
         username: ${{ secrets.DockerUsername }}
         password: ${{ secrets.DockerPassword }}
-        repository: collaction/backend
-        tags: ${{ steps.get_version.outputs.VERSION }}
+    - name: Checkout
+      uses: actions/checkout@v2
+    - uses: docker/build-push-action@v2
+      with:
+        file: CollAction/Dockerfile
+        context: .
+        tags: collaction/backend:${{ steps.get_version.outputs.VERSION }}
         dockerfile: CollAction/Dockerfile
+        push: true

@@ -1,6 +1,7 @@
 name: Run back-end tests
 
 on: 
+  workflow_dispatch:
   push:
     branches:
       - '**'
